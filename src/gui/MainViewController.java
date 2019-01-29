@@ -3,6 +3,7 @@ package gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import application.Main;
 import gui.util.Alerts;
@@ -35,12 +36,15 @@ public class MainViewController implements Initializable {
 
 	@FXML
 	public void onMenuItemDepartmentAction() {
-		loadView2("/gui/DepartmentList.fxml");
+		loadView("/gui/DepartmentList.fxml", (DepartmentListController controller) -> {
+			controller.setDepartmentService(new DepartmentService());
+			controller.updateTableView();
+		});
 	}
 
 	@FXML
 	public void onMenuItemAboutAction() {
-		loadView("/gui/About.fxml");
+		loadView("/gui/About.fxml", x ->{});
 	}
 
 	@Override
@@ -48,7 +52,7 @@ public class MainViewController implements Initializable {
 
 	}
 
-	private synchronized void loadView(String absoluteName) {
+	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName)); // uso esse FXMLLoader para ler a absoluteName
 			VBox newVbox = loader.load(); // assimm vai carregar o parametro loader e passar para o obj do tipo Vox
@@ -61,33 +65,13 @@ public class MainViewController implements Initializable {
 			mainVBox.getChildren().clear(); // limpo o conteudo
 			mainVBox.getChildren().add(mainMenu); // add o Main menu na mainVbox
 			mainVBox.getChildren().addAll(newVbox.getChildren()); // E acrescento junto com o mainMenu o os Children do newVbox
+			
+			T controller = loader.getController();
+			initializingAction.accept(controller);
 
 		} catch (IOException e) {
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
 	}
 	
-	private synchronized void loadView2(String absoluteName) {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName)); // uso esse FXMLLoader para ler a absoluteName
-			VBox newVbox = loader.load(); // assimm vai carregar o parametro loader e passar para o obj do tipo Vox
-			
-			Scene mainScene = Main.getMainScene();// Estou pegando referencia da Cena da classe Main no método estatico getMainScene()
-			
-			VBox mainVBox =(VBox)((ScrollPane) mainScene.getRoot()).getContent();//metodo getroot pega o primeiro elemento da minha MainView que é o scroll Pane
-			
-			Node mainMenu = mainVBox.getChildren().get(0);//primeiro Children da janela VBox principal
-			mainVBox.getChildren().clear(); // limpo o conteudo
-			mainVBox.getChildren().add(mainMenu); // add o Main menu na mainVbox
-			mainVBox.getChildren().addAll(newVbox.getChildren()); // E acrescento junto com o mainMenu o os Children do newVbox
-			
-			DepartmentListController controller = loader.getController();
-			controller.setDepartmentService(new DepartmentService());
-			controller.updateTableView();
-
-		} catch (IOException e) {
-			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
-		}
-	}
-
 }
