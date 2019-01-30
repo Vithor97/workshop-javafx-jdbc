@@ -1,18 +1,27 @@
 package gui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import application.Main;
+import gui.util.Alerts;
+import gui.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
@@ -20,6 +29,7 @@ import model.services.DepartmentService;
 public class DepartmentListController implements Initializable {
 	
 	private DepartmentService service; // Usado para injetar depencia. Melhor do que usar o  =New DepartmentService
+	
 	
 	@FXML
 	private TableView<Department> tableViewDepartment; //referencia para o tableView do sceneBuider
@@ -36,8 +46,9 @@ public class DepartmentListController implements Initializable {
 	private ObservableList<Department> obsList; // para pegar list essa classe é do javafx
 	
 	@FXML
-	public void onBtNewAction() { //tratar o evento do botão
-		System.out.println("onBtNewAction");
+	public void onBtNewAction(ActionEvent event) { //tratar o evento do botão
+		Stage parentStage = Utils.currentStage(event);
+		createDialogForm("/gui/DepartmentForm.fxml",parentStage);
 	}
 	
 	
@@ -70,6 +81,27 @@ public class DepartmentListController implements Initializable {
 		List<Department> list = service.findAll();
 		obsList = FXCollections.observableArrayList(list);
 		tableViewDepartment.setItems(obsList);
+	}
+	
+	private void createDialogForm(String absoluteName,Stage parentStage) {
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+			Pane pane=loader.load();
+			//Criar um stage secundario na frente do Stage principal
+			
+			
+			Stage dialogStage = new Stage();
+			dialogStage.setTitle("Enter Department data");
+			dialogStage.setScene(new Scene(pane));
+			dialogStage.setResizable(false);
+			dialogStage.initOwner(parentStage); 
+			dialogStage.initModality(Modality.WINDOW_MODAL);//Tela fica travada enquanto não fechar ela, não se fecha a anterior
+			dialogStage.showAndWait();
+			
+		}
+		catch (IOException e) {
+			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+		}
 	}
 
 }
