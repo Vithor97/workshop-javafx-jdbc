@@ -40,7 +40,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 	private TableView<Department> tableViewDepartment; // referencia para o tableView do sceneBuider
 
 	@FXML
-	private TableColumn<Department, Integer> tableColumnId;
+	private TableColumn<Department, Integer> tableColumnId;//<Tipo da entidade, tipo da Coluna>
 
 	@FXML
 	private TableColumn<Department, String> tableColumnName;
